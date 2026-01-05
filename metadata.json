@@ -1,0 +1,5 @@
+{
+  "name": "Route Manager AI",
+  "description": "An intelligent Excel automation tool for merging route data with master databases, identifying gaps, and generating standardized reports.",
+  "requestFramePermissions": []
+}

@@ -1,0 +1,155 @@
+<div class="flex flex-col h-screen bg-gray-50 max-w-4xl mx-auto shadow-xl border-x border-gray-200">
+  
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold">
+        RM
+      </div>
+      <div>
+        <h1 class="font-bold text-gray-800">Route Manager AI</h1>
+        <p class="text-xs text-gray-500">Excel Automation Expert</p>
+      </div>
+    </div>
+    <div class="text-xs font-mono bg-gray-100 px-2 py-1 rounded">
+      Step: {{ currentStep() }}/6
+    </div>
+  </header>
+
+  <!-- Chat Area -->
+  <main class="flex-1 overflow-y-auto p-4 space-y-6 bg-slate-50">
+    @for (msg of messages(); track msg.timestamp) {
+      <div class="flex" [class.justify-end]="msg.sender === 'user'">
+        @if (msg.sender === 'ai') {
+          <div class="flex max-w-[80%]">
+            <div class="w-8 h-8 rounded-full bg-green-600 flex-shrink-0 flex items-center justify-center text-white text-xs mr-2 mt-1">AI</div>
+            <div class="bg-white border border-gray-200 rounded-2xl rounded-tl-none p-4 shadow-sm">
+              <p class="text-gray-800 text-sm leading-relaxed">{{ msg.text }}</p>
+              <span class="text-[10px] text-gray-400 block mt-2 text-right">
+                {{ msg.timestamp | date:'shortTime' }}
+              </span>
+            </div>
+          </div>
+        } @else {
+          <div class="bg-blue-600 text-white rounded-2xl rounded-tr-none p-3 max-w-[80%] shadow-md">
+            <p class="text-sm">{{ msg.text }}</p>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Loading Indicator -->
+    @if (isLoading()) {
+      <div class="flex">
+        <div class="w-8 h-8 rounded-full bg-green-600 flex-shrink-0 flex items-center justify-center text-white text-xs mr-2">AI</div>
+        <div class="bg-white border border-gray-200 rounded-2xl rounded-tl-none p-4 shadow-sm flex items-center gap-2">
+          <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+          <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-75"></div>
+          <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-150"></div>
+          <span class="text-xs text-gray-500 ml-2">Processing Data...</span>
+        </div>
+      </div>
+    }
+
+    <!-- Interactive Step: Missing Data Form -->
+    @if (currentStep() === 3 && !isLoading()) {
+      <div class="ml-10 bg-white border border-orange-200 rounded-xl p-4 shadow-sm animate-fade-in">
+        <div class="flex items-center gap-2 mb-4 text-orange-700">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+          <span class="font-semibold text-sm">Missing Data Required</span>
+        </div>
+        
+        <form [formGroup]="missingDataForm" (ngSubmit)="submitMissingData()" class="space-y-3">
+          <div formArrayName="entries">
+            @for (entry of missingEntries.controls; track $index) {
+              <div [formGroupName]="$index" class="p-3 bg-gray-50 rounded border border-gray-100">
+                <div class="mb-2">
+                  <label class="block text-xs font-medium text-gray-500 mb-1">Party Name</label>
+                  <input type="text" formControlName="partyName" readonly class="w-full bg-gray-200 border-none rounded text-sm px-2 py-1 text-gray-600">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Phone</label>
+                    <input type="text" formControlName="phone" class="w-full border-gray-300 rounded text-sm px-2 py-1 focus:ring-green-500 focus:border-green-500" placeholder="Enter Phone">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Address</label>
+                    <input type="text" formControlName="address" class="w-full border-gray-300 rounded text-sm px-2 py-1 focus:ring-green-500 focus:border-green-500" placeholder="Enter Address">
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+          <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded transition-colors text-sm">
+            Update Database
+          </button>
+        </form>
+      </div>
+    }
+
+    <!-- Interactive Step: Final Download -->
+    @if (currentStep() === 6) {
+      <div class="ml-10 bg-green-50 border border-green-200 rounded-xl p-4 shadow-sm flex flex-col items-center text-center animate-fade-in">
+        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h3 class="font-bold text-gray-800 mb-1">Success!</h3>
+        <p class="text-sm text-gray-600 mb-4">Your route file has been merged and formatted.</p>
+        <button (click)="downloadReport()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full font-medium shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Download Report
+        </button>
+      </div>
+    }
+    
+    <!-- Spacing for bottom interaction bar -->
+    <div class="h-20"></div>
+  </main>
+
+  <!-- User Action Bar -->
+  <footer class="bg-white border-t border-gray-200 p-4 sticky bottom-0 z-10">
+    <div class="max-w-3xl mx-auto">
+      @if (currentStep() === 1) {
+        <label class="flex items-center justify-center w-full p-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 hover:border-green-400 transition-all group">
+          <div class="flex flex-col items-center">
+            <svg class="w-8 h-8 text-gray-400 group-hover:text-green-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+            <span class="text-sm font-medium text-gray-600 group-hover:text-green-600">Upload Master File (.xlsx)</span>
+          </div>
+          <input type="file" class="hidden" (change)="onMasterFileUpload($event)" accept=".xlsx, .xls">
+        </label>
+      }
+
+      @if (currentStep() === 2) {
+        <label class="flex items-center justify-center w-full p-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 hover:border-blue-400 transition-all group">
+          <div class="flex flex-col items-center">
+             <svg class="w-8 h-8 text-gray-400 group-hover:text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <span class="text-sm font-medium text-gray-600 group-hover:text-blue-600">Upload Second File (Today's Route)</span>
+          </div>
+          <input type="file" class="hidden" (change)="onSecondFileUpload($event)" accept=".xlsx, .xls">
+        </label>
+      }
+
+      @if (currentStep() === 5) {
+        <label class="flex items-center justify-center w-full p-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 hover:border-purple-400 transition-all group">
+          <div class="flex flex-col items-center">
+            <svg class="w-8 h-8 text-gray-400 group-hover:text-purple-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path></svg>
+            <span class="text-sm font-medium text-gray-600 group-hover:text-purple-600">Upload Template File (.xlsx)</span>
+          </div>
+          <input type="file" class="hidden" (change)="onTemplateFileUpload($event)" accept=".xlsx, .xls">
+        </label>
+      }
+
+      @if (currentStep() === 3 || currentStep() === 6) {
+        <div class="text-center text-xs text-gray-400 italic">
+          AI is waiting for your input above...
+        </div>
+      }
+    </div>
+  </footer>
+</div>
